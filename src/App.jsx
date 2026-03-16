@@ -306,7 +306,7 @@ const App = () => {
       className={`min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 selection:${isHustler ? 'bg-orange-100' : 'bg-teal-100'} transition-colors duration-500`}
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
-      <main className="max-w-5xl mx-auto space-y-10 pb-24">
+      <main className={`max-w-5xl mx-auto space-y-10 transition-all duration-300 ${isPlanDrawerOpen ? 'pb-72' : 'pb-28'}`}>
         
         {/* REORGANIZED HEADER */}
         <header className="space-y-6">
@@ -741,7 +741,7 @@ const App = () => {
                     <h4 className={`text-sm font-extrabold uppercase tracking-widest ${isHustler ? 'text-orange-400' : 'text-teal-300'}`}>Your Escape Plan</h4>
                     <button onClick={() => setIsPlanDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"><ChevronDown size={16}/></button>
                   </div>
-                  <div className="max-h-[30vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                  <div className="max-h-[45vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                     {plannedHolidays.map((h) => (
                       <div key={h.id} className="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 group">
                         <div className="flex items-center gap-3">
