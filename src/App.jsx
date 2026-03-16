@@ -45,21 +45,42 @@ const MONTH_DESTINATIONS = {
 
 const STORAGE_KEY = 'ph_vacay_planned_ids_2026';
 const VIEW_STORAGE_KEY = 'ph_vacay_layout_mode';
+const DAILY_RATE_KEY = 'ph_vacay_daily_rate';
+const HUSTLE_MULTIPLIER = { Regular: 2.0, Special: 1.3 };
 
 const App = () => {
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState('vacationer'); 
-  const [layoutMode, setLayoutMode] = useState('roadmap'); // 'roadmap' | 'calendar'
+  const [layoutMode, setLayoutMode] = useState(() => {
+    try { return localStorage.getItem(VIEW_STORAGE_KEY) || 'roadmap'; } catch { return 'roadmap'; }
+  });
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date(2026, 0, 1));
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [showPast, setShowPast] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
-  const [plannedIds, setPlannedIds] = useState([]);
+  const [plannedIds, setPlannedIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  });
   const [copyStatus, setCopyStatus] = useState(null); 
-  const [isWhispererExpanded, setIsWhispererExpanded] = useState(false);
+  const [isWhispererExpanded, setIsWhispererExpanded] = useState(true);
   const [whispererTone, setWhispererTone] = useState('chill');
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  
+  const [dailyRate, setDailyRate] = useState(() => {
+    try { return localStorage.getItem(DAILY_RATE_KEY) || ''; } catch { return ''; }
+  });
+
+  const computePay = (holiday) => {
+    const rate = Number(dailyRate);
+    if (!dailyRate || isNaN(rate) || rate <= 0) return null;
+    const multiplier = HUSTLE_MULTIPLIER[holiday.type] || 1;
+    return (rate * multiplier).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
+  };
+
+  const handleDailyRateChange = (val) => {
+    setDailyRate(val);
+    try { localStorage.setItem(DAILY_RATE_KEY, val); } catch {}
+  };
+
   const copyTimeout = useRef(null);
 
   const isHustler = viewMode === 'hustler';
@@ -68,25 +89,10 @@ const App = () => {
   const ringAccentClass = isHustler ? 'ring-orange-400' : 'ring-teal-500';
 
   useEffect(() => {
-    // Inject Plus Jakarta Sans
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-
-    const loadData = () => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
-        if (saved) setPlannedIds(JSON.parse(saved));
-        if (savedView) setLayoutMode(savedView);
-      } catch (err) {
-        console.error("Failed to load", err);
-      } finally {
-        setTimeout(() => setIsInitialLoad(false), 800);
-      }
-    };
-    loadData();
     document.title = "PH Long Weekend Planner 2026";
   }, []);
 
@@ -201,20 +207,23 @@ const App = () => {
     if (newIds.length === 0) setIsPlanDrawerOpen(false);
   };
 
-  const copyToClipboard = (text, type) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
+  const copyToClipboard = async (text, type) => {
     try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
       document.execCommand('copy');
-      setCopyStatus(type);
-      if (copyTimeout.current) clearTimeout(copyTimeout.current);
-      copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
+      document.body.removeChild(el);
     }
-    document.body.removeChild(textArea);
+    setCopyStatus(type);
+    if (copyTimeout.current) clearTimeout(copyTimeout.current);
+    copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
   };
 
   const generateOOOText = (h) => {
@@ -227,14 +236,23 @@ const App = () => {
     return tones[whispererTone];
   };
 
-  const handleSharePlan = () => {
-    const summary = plannedHolidays.map(h => `• ${h.name} (${h.vacationDates[0].label} - ${h.vacationDates.slice(-1)[0].label})`).join('\n');
-    const text = `Check out my 2026 Holiday Plan! 🥥\n\n${summary}\n\nPlan yours via PH Vacay`;
+  const handleSharePlan = async () => {
+    const summary = plannedHolidays.map(h => `• ${h.name} (${h.vacationDates[0].label} – ${h.vacationDates.slice(-1)[0].label})`).join('\n');
+    const text = `My 2026 PH Holiday Plan 🌴\n\n${summary}\n\n👉 Plan yours at https://ph-vacay.vercel.app`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'My 2026 PH Holiday Plan', text });
+        setCopyStatus('plan');
+        if (copyTimeout.current) clearTimeout(copyTimeout.current);
+        copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
+        return;
+      } catch { /* user cancelled — fall through to clipboard */ }
+    }
     copyToClipboard(text, 'plan');
   };
 
   const openHolidayModal = (h) => {
-    setIsWhispererExpanded(false);
+    setIsWhispererExpanded(true);
     setSelectedHoliday(h);
   };
 
@@ -290,23 +308,12 @@ const App = () => {
     }
   };
 
-  if (isInitialLoad) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Loader2 className="text-teal-600 animate-spin" size={40} />
-          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Syncing local storage...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div 
       className={`min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 selection:${isHustler ? 'bg-orange-100' : 'bg-teal-100'} transition-colors duration-500`}
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
     >
-      <main className="max-w-5xl mx-auto space-y-10 pb-24">
+      <main className={`max-w-5xl mx-auto space-y-10 transition-all duration-300 ${isPlanDrawerOpen ? 'pb-72' : 'pb-28'}`}>
         
         {/* REORGANIZED HEADER */}
         <header className="space-y-6">
@@ -382,6 +389,29 @@ const App = () => {
                   <p className="text-xs text-teal-50 leading-relaxed font-medium"><strong>The Hustle:</strong> Working today? Regular (200%), Special (130%).</p>
                 </div>
               </div>
+              {isHustler && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-orange-400 mb-2 flex items-center gap-1.5">
+                    <Banknote size={12} /> Your Daily Rate
+                  </p>
+                  <div className="flex items-center gap-2 bg-white/10 rounded-2xl px-4 py-2 w-full max-w-xs">
+                    <span className="text-white/60 font-bold text-sm">₱</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={dailyRate}
+                      onChange={e => handleDailyRateChange(e.target.value)}
+                      placeholder="e.g. 2000"
+                      className="bg-transparent text-white font-extrabold text-sm placeholder:text-white/30 outline-none w-full"
+                    />
+                  </div>
+                  {dailyRate && Number(dailyRate) > 0 && (
+                    <p className="text-[10px] text-white/50 font-medium mt-1.5">
+                      Regular holiday → <span className="text-orange-300 font-extrabold">₱{(Number(dailyRate) * 2).toLocaleString()}</span> &nbsp;·&nbsp; Special → <span className="text-orange-300 font-extrabold">₱{(Number(dailyRate) * 1.3).toLocaleString()}</span>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -475,13 +505,18 @@ const App = () => {
                             <h3 className={`font-extrabold text-base truncate max-w-[140px] md:max-w-[180px] ${holiday.isPast ? 'text-slate-500' : 'text-slate-800'}`}>
                               {holiday.name}
                             </h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${holiday.isPast ? 'bg-slate-200' : (isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600')}`}>
                                 {holiday.type}
                               </span>
                               {!holiday.isPast && (
                                 <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'bg-teal-100 text-teal-600' : holiday.status === 'Bridge Opportunity' ? 'bg-orange-100 text-orange-600' : 'hidden') : 'bg-slate-900 text-white animate-pulse'}`}>
                                   {viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'Tropical Break' : 'Hackable') : (holiday.type === 'Regular' ? '200% Jackpot' : '130% Bonus')}
+                                </span>
+                              )}
+                              {isHustler && !holiday.isPast && computePay(holiday) && (
+                                <span className="text-[9px] font-extrabold text-orange-500">
+                                  ≈ {computePay(holiday)} 💸
                                 </span>
                               )}
                             </div>
@@ -501,31 +536,50 @@ const App = () => {
             /* CALENDAR VIEW */
             <div className="space-y-6">
               {/* Calendar Controls */}
-              <div className="flex items-center justify-between bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-2xl font-extrabold text-slate-800">
-                    {currentCalendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                  </h3>
-                  {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })] && (
-                    <span className={`hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase ${isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
-                      📍 Suggestion: {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })].loc}
-                    </span>
-                  )}
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+                <div className="flex items-center justify-between p-4 md:p-6">
+                  <button
+                    onClick={() => setIsMonthPickerOpen(o => !o)}
+                    className="flex items-center gap-2 group"
+                  >
+                    <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 group-hover:text-slate-600 transition-colors">
+                      {currentCalendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    </h3>
+                    <ChevronDown size={18} className={`text-slate-400 transition-transform duration-200 ${isMonthPickerOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })] && (
+                      <span className={`hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase ${isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
+                        📍 {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })].loc}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => { const d = currentCalendarDate; setCurrentCalendarDate(new Date(d.getFullYear(), d.getMonth() - 1, 1)); setIsMonthPickerOpen(false); }}
+                      className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+                    >
+                      <ChevronLeft size={20}/>
+                    </button>
+                    <button
+                      onClick={() => { const d = currentCalendarDate; setCurrentCalendarDate(new Date(d.getFullYear(), d.getMonth() + 1, 1)); setIsMonthPickerOpen(false); }}
+                      className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+                    >
+                      <ChevronRight size={20}/>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <button 
-                    onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1)))}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all"
-                   >
-                     <ChevronLeft size={20}/>
-                   </button>
-                   <button 
-                    onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1)))}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all"
-                   >
-                     <ChevronRight size={20}/>
-                   </button>
-                </div>
+                {isMonthPickerOpen && (
+                  <div className="px-4 pb-4 md:px-6 md:pb-6 flex flex-wrap gap-2 animate-in slide-in-from-top-2 duration-200 border-t border-slate-100 pt-4">
+                    {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                      <button
+                        key={m}
+                        onClick={() => { setCurrentCalendarDate(new Date(2026, i, 1)); setIsMonthPickerOpen(false); }}
+                        className={`px-4 py-2 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all active:scale-95 ${currentCalendarDate.getMonth() === i ? `${bgAccentClass} text-white shadow-md` : 'bg-slate-50 border border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Grid Header */}
@@ -708,9 +762,13 @@ const App = () => {
                   <span className={`text-[9px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
                     {selectedHoliday.type === 'Regular' ? "The Payday" : "Bonus Tip"}
                   </span>
-                  <p className="text-xl font-extrabold text-slate-800">
-                    {selectedHoliday.type === 'Regular' ? 'Double Pay! 💸' : '+30% Bonus ✨'}
-                  </p>
+                  {isHustler && computePay(selectedHoliday) ? (
+                    <p className="text-xl font-extrabold text-orange-500">≈ {computePay(selectedHoliday)} 💸</p>
+                  ) : (
+                    <p className="text-xl font-extrabold text-slate-800">
+                      {selectedHoliday.type === 'Regular' ? 'Double Pay! 💸' : '+30% Bonus ✨'}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -741,7 +799,7 @@ const App = () => {
                     <h4 className={`text-sm font-extrabold uppercase tracking-widest ${isHustler ? 'text-orange-400' : 'text-teal-300'}`}>Your Escape Plan</h4>
                     <button onClick={() => setIsPlanDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"><ChevronDown size={16}/></button>
                   </div>
-                  <div className="max-h-[30vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                  <div className="max-h-[45vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                     {plannedHolidays.map((h) => (
                       <div key={h.id} className="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5 group">
                         <div className="flex items-center gap-3">
@@ -769,7 +827,7 @@ const App = () => {
                 </button>
                 <button onClick={handleSharePlan} className={`flex items-center gap-2 py-3 px-6 rounded-2xl font-extrabold text-sm transition-all active:scale-95 ${copyStatus === 'plan' ? 'bg-green-600' : bgAccentClass + ' hover:opacity-90'}`}>
                   {copyStatus === 'plan' ? <Check size={16} /> : <Share2 size={16} />}
-                  {copyStatus === 'plan' ? 'Copied!' : 'Copy'}
+                  {copyStatus === 'plan' ? 'Shared!' : (typeof navigator !== 'undefined' && navigator.share ? 'Share' : 'Copy Plan')}
                 </button>
               </div>
             </div>
