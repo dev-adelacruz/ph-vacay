@@ -12,6 +12,7 @@ const HOLIDAYS_2026 = [
   { date: '2026-01-01', name: 'New Year\'s Day', type: 'Regular', description: 'Start the year right. Usually followed by a quiet day of recovery.' },
   { date: '2026-02-17', name: 'Chinese New Year', type: 'Special', description: 'The Year of the Horse begins! Celebrate with family and tikoy.' },
   { date: '2026-02-25', name: 'EDSA Revolution Anniversary', type: 'Special', description: 'Commemorating the bloodless revolution that restored democracy.' },
+  { date: '2026-03-20', name: "Eid'l Fitr (Feast of Ramadhan)", type: 'Regular', description: 'Marks the end of Ramadhan. Proclaimed via Proclamation No. 1189, s. 2026.' },
   { date: '2026-04-02', name: 'Maundy Thursday', type: 'Regular', description: 'Part of the Holy Week observance. Most businesses are closed.' },
   { date: '2026-04-03', name: 'Good Friday', type: 'Regular', description: 'A solemn day of reflection. Expect minimal public transport.' },
   { date: '2026-04-04', name: 'Black Saturday', type: 'Special', description: 'The day between Good Friday and Easter Sunday.' },
