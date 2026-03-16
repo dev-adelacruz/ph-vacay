@@ -190,20 +190,23 @@ const App = () => {
     if (newIds.length === 0) setIsPlanDrawerOpen(false);
   };
 
-  const copyToClipboard = (text, type) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
+  const copyToClipboard = async (text, type) => {
     try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
       document.execCommand('copy');
-      setCopyStatus(type);
-      if (copyTimeout.current) clearTimeout(copyTimeout.current);
-      copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
+      document.body.removeChild(el);
     }
-    document.body.removeChild(textArea);
+    setCopyStatus(type);
+    if (copyTimeout.current) clearTimeout(copyTimeout.current);
+    copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
   };
 
   const generateOOOText = (h) => {
@@ -216,9 +219,18 @@ const App = () => {
     return tones[whispererTone];
   };
 
-  const handleSharePlan = () => {
-    const summary = plannedHolidays.map(h => `• ${h.name} (${h.vacationDates[0].label} - ${h.vacationDates.slice(-1)[0].label})`).join('\n');
-    const text = `Check out my 2026 Holiday Plan! 🥥\n\n${summary}\n\nPlan yours via PH Vacay`;
+  const handleSharePlan = async () => {
+    const summary = plannedHolidays.map(h => `• ${h.name} (${h.vacationDates[0].label} – ${h.vacationDates.slice(-1)[0].label})`).join('\n');
+    const text = `My 2026 PH Holiday Plan 🌴\n\n${summary}\n\n👉 Plan yours at https://ph-vacay.vercel.app`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'My 2026 PH Holiday Plan', text });
+        setCopyStatus('plan');
+        if (copyTimeout.current) clearTimeout(copyTimeout.current);
+        copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
+        return;
+      } catch { /* user cancelled — fall through to clipboard */ }
+    }
     copyToClipboard(text, 'plan');
   };
 
@@ -766,7 +778,7 @@ const App = () => {
                 </button>
                 <button onClick={handleSharePlan} className={`flex items-center gap-2 py-3 px-6 rounded-2xl font-extrabold text-sm transition-all active:scale-95 ${copyStatus === 'plan' ? 'bg-green-600' : bgAccentClass + ' hover:opacity-90'}`}>
                   {copyStatus === 'plan' ? <Check size={16} /> : <Share2 size={16} />}
-                  {copyStatus === 'plan' ? 'Copied!' : 'Copy'}
+                  {copyStatus === 'plan' ? 'Shared!' : (typeof navigator !== 'undefined' && navigator.share ? 'Share' : 'Copy Plan')}
                 </button>
               </div>
             </div>
