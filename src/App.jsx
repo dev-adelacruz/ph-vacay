@@ -49,17 +49,20 @@ const VIEW_STORAGE_KEY = 'ph_vacay_layout_mode';
 const App = () => {
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState('vacationer'); 
-  const [layoutMode, setLayoutMode] = useState('roadmap'); // 'roadmap' | 'calendar'
+  const [layoutMode, setLayoutMode] = useState(() => {
+    try { return localStorage.getItem(VIEW_STORAGE_KEY) || 'roadmap'; } catch { return 'roadmap'; }
+  });
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date(2026, 0, 1));
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [showPast, setShowPast] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
-  const [plannedIds, setPlannedIds] = useState([]);
+  const [plannedIds, setPlannedIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  });
   const [copyStatus, setCopyStatus] = useState(null); 
   const [isWhispererExpanded, setIsWhispererExpanded] = useState(true);
   const [whispererTone, setWhispererTone] = useState('chill');
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const copyTimeout = useRef(null);
 
@@ -69,25 +72,10 @@ const App = () => {
   const ringAccentClass = isHustler ? 'ring-orange-400' : 'ring-teal-500';
 
   useEffect(() => {
-    // Inject Plus Jakarta Sans
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
-
-    const loadData = () => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
-        if (saved) setPlannedIds(JSON.parse(saved));
-        if (savedView) setLayoutMode(savedView);
-      } catch (err) {
-        console.error("Failed to load", err);
-      } finally {
-        setTimeout(() => setIsInitialLoad(false), 800);
-      }
-    };
-    loadData();
     document.title = "PH Long Weekend Planner 2026";
   }, []);
 
@@ -290,17 +278,6 @@ const App = () => {
       setCurrentCalendarDate(new Date(upcoming[0].date));
     }
   };
-
-  if (isInitialLoad) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Loader2 className="text-teal-600 animate-spin" size={40} />
-          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Syncing local storage...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div 
