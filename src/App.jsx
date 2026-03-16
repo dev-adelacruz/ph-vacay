@@ -402,7 +402,7 @@ const App = () => {
                       value={dailyRate}
                       onChange={e => handleDailyRateChange(e.target.value)}
                       placeholder="e.g. 2000"
-                      className="bg-transparent text-white font-extrabold text-sm placeholder:text-white/30 outline-none w-full"
+                      className="bg-transparent text-white font-extrabold text-base placeholder:text-white/30 outline-none w-full"
                     />
                   </div>
                   {dailyRate && Number(dailyRate) > 0 && (
@@ -468,11 +468,16 @@ const App = () => {
                       <div className="group/tip relative ml-4">
                         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-help ${isHustler ? 'bg-orange-50 border-orange-100 text-orange-600' : 'bg-teal-50 border-teal-100 text-teal-600'}`}>
                           <MapPin size={12} />
-                          <span className="text-[9px] font-extrabold uppercase tracking-wider">{MONTH_DESTINATIONS[month].loc}</span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider">{MONTH_DESTINATIONS[month].loc}</span>
                         </div>
-                        <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-slate-900 text-white rounded-xl text-[9px] font-bold opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-30 shadow-2xl text-left">
-                           {MONTH_DESTINATIONS[month].tip}
+                        {/* Desktop: hover tooltip */}
+                        <div className="hidden md:block absolute bottom-full right-0 mb-2 w-48 p-3 bg-slate-900 text-white rounded-xl text-[10px] font-bold opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-30 shadow-2xl text-left">
+                          {MONTH_DESTINATIONS[month].tip}
                         </div>
+                        {/* Mobile: always-visible tip below badge */}
+                        <p className="md:hidden text-[10px] text-slate-400 font-medium mt-1 text-right leading-tight max-w-[140px]">
+                          {MONTH_DESTINATIONS[month].tip}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -487,9 +492,9 @@ const App = () => {
                           ${!holiday.isPast && plannedIds.includes(holiday.id) ? ringAccentClass + ' ring-2 shadow-lg' : ''}`}
                       >
                         {!holiday.isPast && (
-                          <div 
+                          <div
                             onClick={(e) => handlePlannedToggle(holiday.id, e)}
-                            className={`absolute top-0 left-6 w-8 h-10 transition-all duration-500 z-20 cursor-pointer flex items-center justify-center rounded-b-xl ${plannedIds.includes(holiday.id) ? bgAccentClass + ' text-white shadow-md' : 'bg-slate-50 text-slate-200 hover:bg-slate-100 hover:text-slate-300'}`}
+                            className={`absolute top-0 left-6 w-10 h-11 transition-all duration-500 z-20 cursor-pointer flex items-center justify-center rounded-b-xl ${plannedIds.includes(holiday.id) ? bgAccentClass + ' text-white shadow-md' : 'bg-slate-50 text-slate-200 hover:bg-slate-100 hover:text-slate-300'}`}
                           >
                             <Bookmark size={14} fill={plannedIds.includes(holiday.id) ? "currentColor" : "none"} />
                           </div>
@@ -506,11 +511,11 @@ const App = () => {
                               {holiday.name}
                             </h3>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${holiday.isPast ? 'bg-slate-200' : (isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600')}`}>
+                              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ${holiday.isPast ? 'bg-slate-200' : (isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600')}`}>
                                 {holiday.type}
                               </span>
                               {!holiday.isPast && (
-                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'bg-teal-100 text-teal-600' : holiday.status === 'Bridge Opportunity' ? 'bg-orange-100 text-orange-600' : 'hidden') : 'bg-slate-900 text-white animate-pulse'}`}>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ${viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'bg-teal-100 text-teal-600' : holiday.status === 'Bridge Opportunity' ? 'bg-orange-100 text-orange-600' : 'hidden') : 'bg-slate-900 text-white animate-pulse'}`}>
                                   {viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'Tropical Break' : 'Hackable') : (holiday.type === 'Regular' ? '200% Jackpot' : '130% Bonus')}
                                 </span>
                               )}
@@ -620,10 +625,10 @@ const App = () => {
                         
                         {day.holiday && (
                           <div className="space-y-1">
-                            <p className={`text-[8px] md:text-[10px] font-black uppercase leading-tight truncate ${isHustler ? 'text-orange-700' : 'text-teal-700'}`}>
+                            <p className={`hidden md:block text-[10px] font-black uppercase leading-tight truncate ${isHustler ? 'text-orange-700' : 'text-teal-700'}`}>
                               {day.holiday.name}
                             </p>
-                            <p className={`text-[7px] font-bold uppercase opacity-60`}>
+                            <p className={`hidden md:block text-[9px] font-bold uppercase opacity-60`}>
                               {isHustler ? '₱ Payday' : '🏝️ Escape'}
                             </p>
                           </div>
@@ -707,9 +712,9 @@ const App = () => {
                       <p className="text-xs font-bold text-slate-600">Draft leave request</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsWhispererExpanded(!isWhispererExpanded)}
-                    className="p-2 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all active:scale-95"
                   >
                     {isWhispererExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
                   </button>
@@ -723,10 +728,10 @@ const App = () => {
                          { id: 'pro', icon: Briefcase, label: 'Pro' },
                          { id: 'ghost', icon: Ghost, label: 'Ghost' }
                        ].map(tone => (
-                         <button 
-                          key={tone.id} 
+                         <button
+                          key={tone.id}
                           onClick={() => setWhispererTone(tone.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${whispererTone === tone.id ? bgAccentClass + ' text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase transition-all active:scale-95 ${whispererTone === tone.id ? bgAccentClass + ' text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
                          >
                            <tone.icon size={12} /> {tone.label}
                          </button>
@@ -736,9 +741,9 @@ const App = () => {
                       <p className="text-xs font-medium leading-relaxed italic pr-8">
                         "{generateOOOText(selectedHoliday)}"
                       </p>
-                      <button 
+                      <button
                         onClick={() => copyToClipboard(generateOOOText(selectedHoliday), 'ooo')}
-                        className={`absolute bottom-3 right-3 p-2 rounded-xl transition-all ${copyStatus === 'ooo' ? 'bg-green-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                        className={`absolute bottom-3 right-3 p-3 rounded-xl transition-all active:scale-95 ${copyStatus === 'ooo' ? 'bg-green-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                       >
                         {copyStatus === 'ooo' ? <Check size={14} /> : <Copy size={14} />}
                       </button>
@@ -749,7 +754,7 @@ const App = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
                      <Clock size={10} /> {isHustler ? "Day Off Cost" : "The Reward"}
                   </span>
                   <p className="text-xl font-extrabold text-slate-800">{selectedHoliday.potentialDays} Days Off</p>
@@ -759,7 +764,7 @@ const App = () => {
                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover/hustle:rotate-12 transition-transform">
                     {selectedHoliday.type === 'Regular' ? <Banknote size={40} /> : <Coins size={40} />}
                   </div>
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
                     {selectedHoliday.type === 'Regular' ? "The Payday" : "Bonus Tip"}
                   </span>
                   {isHustler && computePay(selectedHoliday) ? (
@@ -797,7 +802,7 @@ const App = () => {
                 <div className="mb-6 space-y-4 animate-in slide-in-from-bottom-4 duration-300 text-left">
                   <div className="flex items-center justify-between">
                     <h4 className={`text-sm font-extrabold uppercase tracking-widest ${isHustler ? 'text-orange-400' : 'text-teal-300'}`}>Your Escape Plan</h4>
-                    <button onClick={() => setIsPlanDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"><ChevronDown size={16}/></button>
+                    <button onClick={() => setIsPlanDrawerOpen(false)} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors active:scale-95"><ChevronDown size={16}/></button>
                   </div>
                   <div className="max-h-[45vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
                     {plannedHolidays.map((h) => (
@@ -805,11 +810,11 @@ const App = () => {
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full ${h.status === 'Long Weekend' ? 'bg-orange-400' : 'bg-teal-500'}`} />
                           <div>
-                            <p className="text-[10px] font-extrabold text-white truncate max-w-[140px]">{h.name}</p>
-                            <p className="text-[8px] font-bold text-white/40 uppercase">{h.vacationDates[0].label} - {h.vacationDates.slice(-1)[0].label}</p>
+                            <p className="text-xs font-extrabold text-white truncate max-w-[160px]">{h.name}</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase">{h.vacationDates[0].label} – {h.vacationDates.slice(-1)[0].label}</p>
                           </div>
                         </div>
-                        <button onClick={() => handlePlannedToggle(h.id)} className="p-2 text-white/20 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                        <button onClick={() => handlePlannedToggle(h.id)} className="p-3 text-white/20 hover:text-red-400 active:scale-95 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     ))}
                   </div>
@@ -817,7 +822,7 @@ const App = () => {
               )}
               <div className="flex items-center justify-between gap-3">
                 <button onClick={() => setIsPlanDrawerOpen(!isPlanDrawerOpen)} className="flex items-center gap-3 pl-2 group">
-                  <div className={`p-2 rounded-xl transition-colors ${isPlanDrawerOpen ? 'bg-white/10' : bgAccentClass}`}>
+                  <div className={`p-3 rounded-xl transition-colors ${isPlanDrawerOpen ? 'bg-white/10' : bgAccentClass}`}>
                     {isPlanDrawerOpen ? <ChevronDown size={18}/> : <Star size={18} fill="currentColor" />}
                   </div>
                   <div className="text-left">
