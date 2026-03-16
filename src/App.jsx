@@ -55,7 +55,7 @@ const App = () => {
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [plannedIds, setPlannedIds] = useState([]);
   const [copyStatus, setCopyStatus] = useState(null); 
-  const [isWhispererExpanded, setIsWhispererExpanded] = useState(false);
+  const [isWhispererExpanded, setIsWhispererExpanded] = useState(true);
   const [whispererTone, setWhispererTone] = useState('chill');
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -234,7 +234,7 @@ const App = () => {
   };
 
   const openHolidayModal = (h) => {
-    setIsWhispererExpanded(false);
+    setIsWhispererExpanded(true);
     setSelectedHoliday(h);
   };
 
