@@ -241,7 +241,7 @@ const App = () => {
     const text = `My 2026 PH Holiday Plan 🌴\n\n${summary}\n\n👉 Plan yours at https://ph-vacay.vercel.app`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'My 2026 PH Holiday Plan', text });
+        await navigator.share({ text });
         setCopyStatus('plan');
         if (copyTimeout.current) clearTimeout(copyTimeout.current);
         copyTimeout.current = setTimeout(() => setCopyStatus(null), 2000);
