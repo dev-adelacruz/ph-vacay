@@ -45,6 +45,8 @@ const MONTH_DESTINATIONS = {
 
 const STORAGE_KEY = 'ph_vacay_planned_ids_2026';
 const VIEW_STORAGE_KEY = 'ph_vacay_layout_mode';
+const DAILY_RATE_KEY = 'ph_vacay_daily_rate';
+const HUSTLE_MULTIPLIER = { Regular: 2.0, Special: 1.3 };
 
 const App = () => {
   const [filter, setFilter] = useState('all');
@@ -63,7 +65,22 @@ const App = () => {
   const [isWhispererExpanded, setIsWhispererExpanded] = useState(true);
   const [whispererTone, setWhispererTone] = useState('chill');
   const [isPlanDrawerOpen, setIsPlanDrawerOpen] = useState(false);
-  
+  const [dailyRate, setDailyRate] = useState(() => {
+    try { return localStorage.getItem(DAILY_RATE_KEY) || ''; } catch { return ''; }
+  });
+
+  const computePay = (holiday) => {
+    const rate = Number(dailyRate);
+    if (!dailyRate || isNaN(rate) || rate <= 0) return null;
+    const multiplier = HUSTLE_MULTIPLIER[holiday.type] || 1;
+    return (rate * multiplier).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
+  };
+
+  const handleDailyRateChange = (val) => {
+    setDailyRate(val);
+    try { localStorage.setItem(DAILY_RATE_KEY, val); } catch {}
+  };
+
   const copyTimeout = useRef(null);
 
   const isHustler = viewMode === 'hustler';
@@ -372,6 +389,29 @@ const App = () => {
                   <p className="text-xs text-teal-50 leading-relaxed font-medium"><strong>The Hustle:</strong> Working today? Regular (200%), Special (130%).</p>
                 </div>
               </div>
+              {isHustler && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-orange-400 mb-2 flex items-center gap-1.5">
+                    <Banknote size={12} /> Your Daily Rate
+                  </p>
+                  <div className="flex items-center gap-2 bg-white/10 rounded-2xl px-4 py-2 w-full max-w-xs">
+                    <span className="text-white/60 font-bold text-sm">₱</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={dailyRate}
+                      onChange={e => handleDailyRateChange(e.target.value)}
+                      placeholder="e.g. 2000"
+                      className="bg-transparent text-white font-extrabold text-sm placeholder:text-white/30 outline-none w-full"
+                    />
+                  </div>
+                  {dailyRate && Number(dailyRate) > 0 && (
+                    <p className="text-[10px] text-white/50 font-medium mt-1.5">
+                      Regular holiday → <span className="text-orange-300 font-extrabold">₱{(Number(dailyRate) * 2).toLocaleString()}</span> &nbsp;·&nbsp; Special → <span className="text-orange-300 font-extrabold">₱{(Number(dailyRate) * 1.3).toLocaleString()}</span>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -465,13 +505,18 @@ const App = () => {
                             <h3 className={`font-extrabold text-base truncate max-w-[140px] md:max-w-[180px] ${holiday.isPast ? 'text-slate-500' : 'text-slate-800'}`}>
                               {holiday.name}
                             </h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${holiday.isPast ? 'bg-slate-200' : (isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600')}`}>
                                 {holiday.type}
                               </span>
                               {!holiday.isPast && (
                                 <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase ${viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'bg-teal-100 text-teal-600' : holiday.status === 'Bridge Opportunity' ? 'bg-orange-100 text-orange-600' : 'hidden') : 'bg-slate-900 text-white animate-pulse'}`}>
                                   {viewMode === 'vacationer' ? (holiday.status === 'Long Weekend' ? 'Tropical Break' : 'Hackable') : (holiday.type === 'Regular' ? '200% Jackpot' : '130% Bonus')}
+                                </span>
+                              )}
+                              {isHustler && !holiday.isPast && computePay(holiday) && (
+                                <span className="text-[9px] font-extrabold text-orange-500">
+                                  ≈ {computePay(holiday)} 💸
                                 </span>
                               )}
                             </div>
@@ -717,9 +762,13 @@ const App = () => {
                   <span className={`text-[9px] font-black uppercase tracking-widest ${textAccentClass} flex items-center gap-1`}>
                     {selectedHoliday.type === 'Regular' ? "The Payday" : "Bonus Tip"}
                   </span>
-                  <p className="text-xl font-extrabold text-slate-800">
-                    {selectedHoliday.type === 'Regular' ? 'Double Pay! 💸' : '+30% Bonus ✨'}
-                  </p>
+                  {isHustler && computePay(selectedHoliday) ? (
+                    <p className="text-xl font-extrabold text-orange-500">≈ {computePay(selectedHoliday)} 💸</p>
+                  ) : (
+                    <p className="text-xl font-extrabold text-slate-800">
+                      {selectedHoliday.type === 'Regular' ? 'Double Pay! 💸' : '+30% Bonus ✨'}
+                    </p>
+                  )}
                 </div>
               </div>
 
