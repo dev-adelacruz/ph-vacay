@@ -51,6 +51,7 @@ const App = () => {
   const [viewMode, setViewMode] = useState('vacationer'); 
   const [layoutMode, setLayoutMode] = useState('roadmap'); // 'roadmap' | 'calendar'
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date(2026, 0, 1));
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [showPast, setShowPast] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [plannedIds, setPlannedIds] = useState([]);
@@ -501,31 +502,50 @@ const App = () => {
             /* CALENDAR VIEW */
             <div className="space-y-6">
               {/* Calendar Controls */}
-              <div className="flex items-center justify-between bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-2xl font-extrabold text-slate-800">
-                    {currentCalendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                  </h3>
-                  {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })] && (
-                    <span className={`hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase ${isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
-                      📍 Suggestion: {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })].loc}
-                    </span>
-                  )}
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+                <div className="flex items-center justify-between p-4 md:p-6">
+                  <button
+                    onClick={() => setIsMonthPickerOpen(o => !o)}
+                    className="flex items-center gap-2 group"
+                  >
+                    <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 group-hover:text-slate-600 transition-colors">
+                      {currentCalendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    </h3>
+                    <ChevronDown size={18} className={`text-slate-400 transition-transform duration-200 ${isMonthPickerOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })] && (
+                      <span className={`hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase ${isHustler ? 'bg-orange-50 text-orange-600' : 'bg-teal-50 text-teal-600'}`}>
+                        📍 {MONTH_DESTINATIONS[currentCalendarDate.toLocaleString('default', { month: 'long' })].loc}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => { const d = currentCalendarDate; setCurrentCalendarDate(new Date(d.getFullYear(), d.getMonth() - 1, 1)); setIsMonthPickerOpen(false); }}
+                      className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+                    >
+                      <ChevronLeft size={20}/>
+                    </button>
+                    <button
+                      onClick={() => { const d = currentCalendarDate; setCurrentCalendarDate(new Date(d.getFullYear(), d.getMonth() + 1, 1)); setIsMonthPickerOpen(false); }}
+                      className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+                    >
+                      <ChevronRight size={20}/>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <button 
-                    onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1)))}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all"
-                   >
-                     <ChevronLeft size={20}/>
-                   </button>
-                   <button 
-                    onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1)))}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all"
-                   >
-                     <ChevronRight size={20}/>
-                   </button>
-                </div>
+                {isMonthPickerOpen && (
+                  <div className="px-4 pb-4 md:px-6 md:pb-6 flex flex-wrap gap-2 animate-in slide-in-from-top-2 duration-200 border-t border-slate-100 pt-4">
+                    {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                      <button
+                        key={m}
+                        onClick={() => { setCurrentCalendarDate(new Date(2026, i, 1)); setIsMonthPickerOpen(false); }}
+                        className={`px-4 py-2 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all active:scale-95 ${currentCalendarDate.getMonth() === i ? `${bgAccentClass} text-white shadow-md` : 'bg-slate-50 border border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Grid Header */}
