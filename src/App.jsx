@@ -4,7 +4,7 @@ import {
   AlertCircle, PlaneTakeoff, Sun, X, Clock, Banknote, CalendarDays,
   ArrowRight, History, Eye, EyeOff, Sparkles, Coins, Map,
   Construction, Copy, Check, Share2, Star, Bookmark, ChevronDown,
-  MessageSquareQuote, Trash2, ChevronUp, Loader2, Timer, Ghost, Briefcase,
+  MessageSquareQuote, Trash2, ChevronUp, Loader2, Timer, Briefcase,
   MapPin, Wand2, ChevronLeft, LayoutList
 } from 'lucide-react';
 
@@ -115,7 +115,7 @@ const STRINGS = {
     escapeSequence: 'The Escape Sequence',
     bossWhispererTitle: 'Boss-Whisperer',
     bossWhispererSub: 'Draft leave request',
-    tones: { chill: 'Chill', pro: 'Pro', ghost: 'Ghost' },
+    tones: { chill: 'Chill', pro: 'Pro' },
     rewardLabel: 'The Reward',
     costLabel: 'Day Off Cost',
     daysOff: (n) => `${n} Days Off`,
@@ -168,7 +168,7 @@ const STRINGS = {
     escapeSequence: '連休シーケンス',
     bossWhispererTitle: '上司説得ジェネレーター',
     bossWhispererSub: '休暇申請文を生成',
-    tones: { chill: 'ゆるめ', pro: 'ビジネス', ghost: 'ガチ消え' },
+    tones: { chill: 'ゆるめ', pro: 'ビジネス' },
     rewardLabel: 'リターン',
     costLabel: '有給コスト',
     daysOff: (n) => `${n}日間オフ`,
@@ -411,13 +411,11 @@ const App = () => {
       return {
         chill: `${h.name}なので${dates}はお休みをいただきます。帰ったらちゃんとやります。よろしくお願いします🍵`,
         pro:   `${dates}の期間、${h.name}に伴い休暇を取得いたします。業務の引き継ぎは事前に完了させます。何卒よろしくお願い申し上げます。`,
-        ghost: `${dates}は完全オフラインです。${h.name}です。Slackもメールも見ません。緊急の場合は…緊急かどうかもう一度考えてください。🗾`,
       }[whispererTone];
     }
     return {
       chill: `Hi Boss! Just a heads up that I'll be offline from ${dates} to maximize national productivity via deep rest. Will be back fully charged! 🥥`,
       pro:   `I'm writing to request leave for the ${h.name} sequence (${dates}). I will ensure all pending tasks are handed over before my absence. Thank you!`,
-      ghost: `Going dark for ${h.name}. Sequence: ${dates}. No Slack, no emails, no "quick questions." If it's an emergency, please reconsider. See you soon! 🏝️`,
     }[whispererTone];
   };
 
@@ -515,16 +513,16 @@ const App = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-3 self-end md:self-auto">
+            <div className="flex items-center gap-2 self-end md:self-auto flex-wrap justify-end">
               {/* Country Toggle */}
               <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
                 <button
                   onClick={() => handleCountryChange('ph')}
-                  className={`px-3 py-2 rounded-xl transition-all text-sm font-extrabold active:scale-95 ${country === 'ph' ? 'bg-teal-600 text-white shadow-lg shadow-teal-200' : 'text-slate-400 hover:bg-slate-50'}`}
+                  className={`px-2.5 py-2 rounded-xl transition-all text-xs font-extrabold active:scale-95 ${country === 'ph' ? 'bg-teal-600 text-white shadow-lg shadow-teal-200' : 'text-slate-400 hover:bg-slate-50'}`}
                 >🇵🇭 PH</button>
                 <button
                   onClick={() => handleCountryChange('jp')}
-                  className={`px-3 py-2 rounded-xl transition-all text-sm font-extrabold active:scale-95 ${country === 'jp' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'text-slate-400 hover:bg-slate-50'}`}
+                  className={`px-2.5 py-2 rounded-xl transition-all text-xs font-extrabold active:scale-95 ${country === 'jp' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'text-slate-400 hover:bg-slate-50'}`}
                 >🇯🇵 JP</button>
               </div>
 
@@ -604,21 +602,21 @@ const App = () => {
 
         {/* View Selection & Roadmap Title */}
         <section className="space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-            <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-800">
+          <div className="flex flex-col gap-3 px-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex items-center justify-between gap-3 sm:justify-start sm:gap-4">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-800 leading-none">
                 {layoutMode === 'roadmap' ? S.roadmapTitle : S.calendarTitle}
               </h2>
-              <div className="flex bg-white/60 p-1 rounded-2xl border border-slate-200 backdrop-blur-sm shadow-sm">
+              <div className="flex bg-white/60 p-1 rounded-2xl border border-slate-200 backdrop-blur-sm shadow-sm shrink-0">
                 <button
                   onClick={() => toggleLayoutMode()}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${layoutMode === 'roadmap' ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${layoutMode === 'roadmap' ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   <LayoutList size={14} /> List
                 </button>
                 <button
                   onClick={() => toggleLayoutMode()}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${layoutMode === 'calendar' ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${layoutMode === 'calendar' ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   <Calendar size={14} /> Grid
                 </button>
@@ -626,12 +624,12 @@ const App = () => {
             </div>
 
             {layoutMode === 'roadmap' && (
-              <div className="flex bg-white/60 p-1 rounded-2xl border border-slate-200 backdrop-blur-sm shadow-sm w-fit">
+              <div className="flex bg-white/60 p-1 rounded-2xl border border-slate-200 backdrop-blur-sm shadow-sm w-full sm:w-fit">
                 {['all', 'long'].map(t => (
                   <button
                     key={t}
                     onClick={() => setFilter(t)}
-                    className={`px-5 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${filter === t ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600 hover:bg-white'}`}
+                    className={`flex-1 sm:flex-none px-3 sm:px-5 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all text-center ${filter === t ? `${bgAccentClass} text-white shadow-md` : 'text-slate-400 hover:text-slate-600 hover:bg-white'}`}
                   >
                     {t === 'all' ? S.filterAll : S.filterLong}
                   </button>
@@ -678,7 +676,7 @@ const App = () => {
                         {!holiday.isPast && (
                           <div
                             onClick={(e) => handlePlannedToggle(holiday.id, e)}
-                            className={`absolute top-0 left-6 w-10 h-11 transition-all duration-500 z-20 cursor-pointer flex items-center justify-center rounded-b-xl ${plannedIds.includes(holiday.id) ? bgAccentClass + ' text-white shadow-md' : 'bg-slate-50 text-slate-200 hover:bg-slate-100 hover:text-slate-300'}`}
+                            className={`absolute top-0 left-4 w-11 h-12 transition-all duration-500 z-20 cursor-pointer flex items-center justify-center rounded-b-xl ${plannedIds.includes(holiday.id) ? bgAccentClass + ' text-white shadow-md' : 'bg-slate-50 text-slate-200 hover:bg-slate-100 hover:text-slate-300'}`}
                           >
                             <Bookmark size={14} fill={plannedIds.includes(holiday.id) ? "currentColor" : "none"} />
                           </div>
@@ -773,14 +771,14 @@ const App = () => {
               </div>
 
               {/* Grid Header */}
-              <div className="grid grid-cols-7 gap-2 px-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 px-1 sm:px-2">
                 {DAY_LABELS.map(d => (
-                  <div key={d} className="text-[10px] font-extrabold uppercase text-slate-400 text-center tracking-widest">{d}</div>
+                  <div key={d} className="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-400 text-center tracking-wide sm:tracking-widest">{d}</div>
                 ))}
               </div>
 
               {/* Actual Grid */}
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {calendarData.map((day, idx) => {
                   const isCurrentDay = day.dateStr === today.toISOString().split('T')[0];
 
@@ -788,7 +786,7 @@ const App = () => {
                     <div
                       key={idx}
                       onClick={() => day.holiday && openHolidayModal(day.holiday)}
-                      className={`relative min-h-[90px] md:min-h-[120px] p-2 md:p-3 rounded-3xl border transition-all
+                      className={`relative min-h-[64px] sm:min-h-[90px] md:min-h-[120px] p-1.5 sm:p-2 md:p-3 rounded-2xl md:rounded-3xl border transition-all
                         ${!day.currentMonth ? 'bg-slate-50/30 border-transparent opacity-20 pointer-events-none' : 'bg-white border-slate-100 shadow-sm'}
                         ${day.holiday ? `cursor-pointer hover:shadow-xl hover:-translate-y-1` : ''}
                         ${day.sequenceParent && day.currentMonth ? (isHustler ? 'bg-orange-50/60 border-orange-100' : (isJP ? 'bg-red-50/60 border-red-100' : 'bg-teal-50/60 border-teal-100')) : ''}`}
@@ -859,12 +857,12 @@ const App = () => {
               </div>
             </div>
 
-            <div className="p-8 -mt-8 bg-white rounded-t-[3rem] relative space-y-6 max-h-[75vh] overflow-y-auto scrollbar-hide">
+            <div className="p-8 -mt-8 bg-white rounded-t-[3rem] relative space-y-6 max-h-[calc(75vh-4rem)] overflow-y-auto scrollbar-hide">
               <div className="space-y-3">
                 <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                    <Map size={12} className={textAccentClass} /> {S.escapeSequence}
                 </h4>
-                <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-8 px-8" style={{ WebkitOverflowScrolling: 'touch' }}>
                   {selectedHoliday.vacationDates.map((v, i) => {
                     const isHoliday = v.fullDate === selectedHoliday.date;
                     const isWeekend = v.dayName === 'Saturday' || v.dayName === 'Sunday';
@@ -913,7 +911,6 @@ const App = () => {
                        {[
                          { id: 'chill', icon: Palmtree },
                          { id: 'pro', icon: Briefcase },
-                         { id: 'ghost', icon: Ghost }
                        ].map(tone => (
                          <button
                           key={tone.id}
@@ -964,7 +961,8 @@ const App = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
+            </div>
+            <div className="flex gap-3 p-6 pt-0 bg-white">
                 <button
                   onClick={() => handlePlannedToggle(selectedHoliday.id)}
                   className={`flex-1 py-4 font-extrabold rounded-2xl transition-all border-2 ${plannedIds.includes(selectedHoliday.id) ? (isHustler ? 'bg-orange-50 border-orange-600 text-orange-600' : (isJP ? 'bg-red-50 border-red-600 text-red-600 shadow-lg shadow-red-100' : 'bg-teal-50 border-teal-600 text-teal-600 shadow-lg shadow-teal-100')) : 'bg-white border-slate-200 text-slate-900 hover:border-slate-400'}`}
@@ -975,7 +973,6 @@ const App = () => {
                   {S.gotIt}
                 </button>
               </div>
-            </div>
           </div>
         </div>
       )}
